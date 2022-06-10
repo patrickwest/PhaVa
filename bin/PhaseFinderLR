@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+
+###############################################################################
+#
+# PhaseFinderLR - main entry point
+#
+###############################################################################
+
+__author__ = "Patrick T West"
+__license__ = "MIT"
+__email__ = "ptwest10@gmail.com"
+__status__ = "Development"
+
+import argparse
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+#sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), 'scripts')))
+import PhaseFinderLR.manager
+import PhaseFinderLR.argumentParser
+
+if sys.version_info[0] < 3:
+    print('''
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    !!! you're running PhaseFinderLR with python2- you need python 3 !!!
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!''')
+    sys.exit(1)
+
+if __name__ == '__main__':
+    args = PhaseFinderLR.argumentParser.parse_args(sys.argv[1:])
+    PhaseFinderLR.manager.Manager().main(args)
