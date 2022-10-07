@@ -41,7 +41,7 @@ def runEinverted(index, contigsPath, wd):
         logging.info(err.strip())
 
 def runEinverted51(contigsPath, wd):
-    path, basename = contigsPath.rsplit('/',1)
+    basename = os.path.basename(contigsPath)
     outDir = wd + "/intermediate/"
 
     command = "einverted -maxrepeat 750  -gap 100 -threshold 51 -match 5 -mismatch -9 -outfile " + outDir + "einverted.51.outfile -outseq " + outDir + "einverted.51.outseq -sequence " + contigsPath
@@ -51,7 +51,7 @@ def runEinverted51(contigsPath, wd):
     return (out, err)
 
 def runEinverted75(contigsPath, wd):
-    path, basename = contigsPath.rsplit('/',1)
+    basename = os.path.basename(contigsPath)
     outDir = wd + "/intermediate/"
 
     command = "einverted -maxrepeat 750  -gap 100 -threshold 75 -match 5 -mismatch -15 -outfile " + outDir + "einverted.75.outfile -outseq " + outDir + "einverted.75.outseq -sequence " + contigsPath

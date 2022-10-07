@@ -4,7 +4,9 @@ import logging
 import PhaseFinderLR.utils
 import PhaseFinderLR.locate
 import os
+import random
 from Bio.Seq import Seq
+from Bio import SeqIO
 
 def main(args, irDb):
 
@@ -17,8 +19,17 @@ def main(args, irDb):
     irDb = createInSilico(args, irDb)
     exportMockInvertons(irDb, args.dir)
 
-    if (args.mockGenome):
-        createMockIRGenome(args, irDb)
+    if args.genes is not None:
+        if args.genesFormat == 'gff':
+            genes = parseGFF(args.genes)
+        else:
+            genes = parseGBK(args.genes)
+
+        findGeneOverlaps(genes, irDb)
+        exportGeneOverlaps(irDb, args.dir)
+
+    #if (args.mockGenome is not None and args.mockGenome):
+    #    createMockIRGenome(args, irDb)
 
     return irDb
 
@@ -61,15 +72,28 @@ def parseIRs(path, irDb):
 
 def createMockIRGenome(args, irDb):
     mockG = irDb.genome
-    for ir in irDb.IRs:
-        mockG[irDb.IRs[ir].chr] = mockG[irDb.IRs[ir].chr][0:irDb.IRs[ir].leftStop] + str(Seq(irDb.IRs[ir].middleSeq).reverse_complement()) + mockG[irDb.IRs[ir].chr][irDb.IRs[ir].rightStart:len(mockG[irDb.IRs[ir].chr])]
+
+    irNames = []
+    if args.mockNumber > 0:
+        irs = random.sample(irDb.IRs.keys(), args.mockNumber)
+        for ir in irs:
+            mockG[irDb.IRs[ir].chr] = mockG[irDb.IRs[ir].chr][0:irDb.IRs[ir].leftStop] + str(Seq(irDb.IRs[ir].middleSeq).reverse_complement()) + mockG[irDb.IRs[ir].chr][irDb.IRs[ir].rightStart:len(mockG[irDb.IRs[ir].chr])]
+            irNames.append(ir)
+    else:
+        for ir in irDb.IRs:
+            mockG[irDb.IRs[ir].chr] = mockG[irDb.IRs[ir].chr][0:irDb.IRs[ir].leftStop] + str(Seq(irDb.IRs[ir].middleSeq).reverse_complement()) + mockG[irDb.IRs[ir].chr][irDb.IRs[ir].rightStart:len(mockG[irDb.IRs[ir].chr])]
+            irNames.append(ir)
 
     out = open(args.dir + "/mockGenome.fasta", 'w')
+    outTsv = open(args.dir + "/mockGenomeInvertedInvertons.tsv", 'w')
     for chrom in mockG:
         out.write('>' + chrom + "\n")
         out.write(mockG[chrom] + "\n")
+    for name in irNames:
+        outTsv.write(name + "\n")
 
     out.close()
+    outTsv.close()
 
 
 def exportMockInvertons(irDb, outpath):
@@ -79,3 +103,66 @@ def exportMockInvertons(irDb, outpath):
         out.write(irDb.IRs[ir].fSeq + '\n')
         out.write('>' + ir + '_r\n')
         out.write(irDb.IRs[ir].rSeq + '\n')
+
+# parse ncbi gbk file
+def parseGBK(path):
+    genes = {}
+    for record in SeqIO.parse(path, "genbank"):
+        for seq_feature in record.features:
+            if seq_feature.type == 'CDS':
+                if int(seq_feature.location.strand) == -1:
+                    strand = '-'
+                else:
+                    strand = '+'
+                genes[seq_feature.qualifiers['locus_tag'][0]] = [record.id, int(seq_feature.location.start), int(seq_feature.location.end), strand]
+
+    return genes
+
+# Parse a prodigal gff file
+def parseGFF(path):
+    genes = {}
+
+    fh = open (path)
+    for line in fh:
+        if not line.startswith('#'):
+            sline = line.strip().split()
+            if sline[2] == 'CDS':
+                strand = sline[6]
+                id = sline[0] + '_' + sline[8].split(';')[0].split('_')[1]
+                genes[id] = [sline[0], int(sline[3]), int(sline[4]), strand]
+
+    return genes
+
+def findGeneOverlaps(genes, irDb):
+
+    for ir in irDb.IRs:
+        #clear gene overlaps from any previous results
+        irDb.IRs[ir].geneOverlaps = []
+
+        for gene in genes:
+            if genes[gene][0] == irDb.IRs[ir].chr:
+                if irDb.IRs[ir].leftStop >= genes[gene][1] and irDb.IRs[ir].rightStart <= genes[gene][2]:
+                    irDb.IRs[ir].geneOverlaps.append([gene, "intragenic"])
+                elif irDb.IRs[ir].leftStop <= genes[gene][1] and irDb.IRs[ir].rightStart >= genes[gene][1]:
+                    if genes[gene][3] == "+":
+                        irDb.IRs[ir].geneOverlaps.append([gene, "partial overlap, start"])
+                    else:
+                        irDb.IRs[ir].geneOverlaps.append([gene, "partial overlap, stop"])
+                elif irDb.IRs[ir].leftStop <= genes[gene][2] and irDb.IRs[ir].rightStart >= genes[gene][2]:
+                    if genes[gene][3] == "+":
+                        irDb.IRs[ir].geneOverlaps.append([gene, "partial overlap, stop"])
+                    else:
+                        irDb.IRs[ir].geneOverlaps.append([gene, "partial overlap, start"])
+
+    for ir in irDb.IRs:
+        if len(irDb.IRs[ir].geneOverlaps) == 0:
+            irDb.IRs[ir].geneOverlaps.append(["","intergenic"])
+
+def exportGeneOverlaps(irDb, outpath):
+    out = open(outpath + '/geneOverlaps.tsv', 'w')
+    for ir in irDb.IRs:
+        out.write(ir + "\t")
+        for overlap in irDb.IRs[ir].geneOverlaps:
+            out.write(overlap[0] + "," + overlap[1] + ";")
+        out.write("\n")
+    out.close()

@@ -73,6 +73,13 @@ def parse_args(args):
     CreateFlags = create_parent.add_argument_group('CREATE PARAMETERS')
     CreateFlags.add_argument("-f", "--flankSize", help="Size flanking size to include on either side of invertable regions (in bps)", default=1000,
                          type=int)
+    #CreateFlags.add_argument("--geneOverlap", help="Report gene/inverton overlaps. Requires a list of features in genbank format from --genes"
+    #                     action='store_true')
+    CreateFlags.add_argument("--genes", help="List of gene features in genbank format, for detecting gene/inverton overlaps",
+                         type=str)
+    geneFormats = ["gbk", "gff"]
+    CreateFlags.add_argument("--genesFormat", help="File format of the list of gene features.",
+                         choices=geneFormats, default="gbk")
 
     createReq_parent = argparse.ArgumentParser(add_help=False)
     CreateReqFlags = createReq_parent.add_argument_group('CREATE SPECIFIC PARAMETERS')
@@ -82,14 +89,18 @@ def parse_args(args):
                          type=str)
     CreateReqFlags.add_argument("--mockGenome", help="Create a mock genome where all putative IRs are flipped to opposite of the reference orientation",
                          action='store_true')
+    CreateReqFlags.add_argument("--mockNumber", help="If creating a mockGenome, the number of invertons to invert. A value of 0 inverts all predicted inverton locations",
+                         default=0, type=int)
 
     ratio_parent = argparse.ArgumentParser(add_help=False)
     RatioFlags = ratio_parent.add_argument_group('RATIO PARAMETERS')
     RatioFlags.add_argument("-r", "--fastq", help="Name of the reads file to be used for mapping",
                          type=str)
-    RatioFlags.add_argument("-m", "--maxMismatch", help="Maximum proportion of inverton sequence that can be mismatch before a read is removed", default=0.2,
+    RatioFlags.add_argument("-m", "--maxMismatch", help="Maximum proportion of inverton sequence that can be mismatch before a read is removed", default=0.15,
                          type=float)
     RatioFlags.add_argument("--keepSam", help="Keep the sam file from the mapping",
+                         action='store_true')
+    RatioFlags.add_argument("--reportAll", help="Report mapping results for all putative invertons, regardless of outcome",
                          action='store_true')
 
     ratioReq_parent = argparse.ArgumentParser(add_help=False)

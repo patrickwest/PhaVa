@@ -32,7 +32,7 @@ def main(args, irDb):
     reads = computeRatios(reads, irDb, os.path.basename(args.fastq), args.dir)
 
     # produce output
-    reportInvertons(irDb, os.path.basename(args.fastq), args.dir)
+    reportInvertons(irDb, os.path.basename(args.fastq), args.dir, args.reportAll)
 
     if (args.keepSam):
         reportMappingReads(args.dir, args.fastq, irDb.genomeName, reads)
@@ -59,23 +59,35 @@ def parseSam(wd, reads, genomeName, irDb, maxMismatch):
             ir = splithead[0]
 
             # get ir length
-            if (irDb.IRs[ir].leftStart < irDb.IRs[ir].flankSize):
-                start = irDb.IRs[ir].leftStart
+            if (int(irDb.IRs[ir].leftStart) < int(irDb.IRs[ir].flankSize)):
+                # start = irDb.IRs[ir].leftStart
+                start = irDb.IRs[ir].leftStop
             else:
-                start = irDb.IRs[ir].flankSize
-            stop = (irDb.IRs[ir].rightStop + irDb.IRs[ir].flankSize) - irDb.IRs[ir].leftStart
+                # start = irDb.IRs[ir].flankSize
+                start = irDb.IRs[ir].flankSize + (irDb.IRs[ir].leftStop - irDb.IRs[ir].leftStart)
+            # stop = (irDb.IRs[ir].rightStop + start) - irDb.IRs[ir].leftStart
+            stop = (irDb.IRs[ir].rightStart + start) - irDb.IRs[ir].leftStop
             cutoff = (stop - start) * maxMismatch
 
             num_mismatch = 0
+            num_flank_mismatch = 0
+            flank_length = 0
             for pair in read.get_aligned_pairs(with_seq=True):
-                if pair[1] != None and pair[1] > start and pair[1] < stop:
-                    if pair[2].islower() or pair[0] == None:
-                        num_mismatch += 1
+                if pair[1] != None:
+                    if pair[1] > start and pair[1] < stop:
+                        if pair[2].islower() or pair[0] == None:
+                            num_mismatch += 1
+                    else:
+                        flank_length += 1
+                        if pair[2].islower() or pair[0] == None:
+                            num_flank_mismatch += 1
 
-            #print(str(cutoff) + "\t" + str(num_mismatch))
+            # also check that flanking region doesnt have a high mismatch rate, but consider them separately to avoid masking a signal form one or the other
+            flank_cutoff = flank_length * maxMismatch
 
-            if num_mismatch < cutoff:
+            if num_mismatch < cutoff and num_flank_mismatch < flank_cutoff:
                 reads.append([splithead[0], splithead[1], read.reference_start, read.reference_end, read.query_name, read.mapping_quality])
+
     return reads
 
 def computeRatios(reads, irDb, basename, wd):
@@ -102,19 +114,32 @@ def computeRatios(reads, irDb, basename, wd):
         irDb.IRs[ir].reverseReads[basename] = 0
         irDb.IRs[ir].ratio[basename] = 0
 
+    # TODO: combine duplicate code into one method
     for key in fdb:
         if key not in rdb and fdb[key][0] in irDb.IRs:
             # filter out reads that dont map into flanking sequence
-            length =  (irDb.IRs[fdb[key][0]].rightStop + irDb.IRs[fdb[key][0]].flankSize) - (irDb.IRs[fdb[key][0]].leftStart - irDb.IRs[fdb[key][0]].flankSize)
-            if (int(fdb[key][2]) < irDb.IRs[fdb[key][0]].flankSize - 20 and int(fdb[key][3]) > (length - (irDb.IRs[fdb[key][0]].flankSize + 20))):
+            length = (irDb.IRs[fdb[key][0]].rightStop - irDb.IRs[fdb[key][0]].leftStart)
+            # get start point of ir (its the raw start if start < flanksize)
+            if (irDb.IRs[fdb[key][0]].leftStart < irDb.IRs[fdb[key][0]].flankSize):
+                start = irDb.IRs[fdb[key][0]].leftStart
+            else:
+                start = irDb.IRs[fdb[key][0]].flankSize
+
+            if (int(fdb[key][2]) < start - 20 and int(fdb[key][3]) > (length + (start + 20))):
                 irDb.IRs[fdb[key][0]].forwardReads[basename] += 1
                 final_filt_reads[fdb[key][0] + '_f_' + str(fdb[key][4]) + '_' + str(fdb[key][2]) + '_' + str(fdb[key][3])] = fdb[key]
 
     for key in rdb:
         if key not in fdb and rdb[key][0] in irDb.IRs:
             # filter out reads that dont map into flanking sequence
-            length =  (irDb.IRs[rdb[key][0]].rightStop + irDb.IRs[rdb[key][0]].flankSize) - (irDb.IRs[rdb[key][0]].leftStart - irDb.IRs[rdb[key][0]].flankSize)
-            if (int(rdb[key][2]) < irDb.IRs[rdb[key][0]].flankSize - 20 and int(rdb[key][3]) > (length - (irDb.IRs[rdb[key][0]].flankSize + 20))):
+            length = (irDb.IRs[rdb[key][0]].rightStop - irDb.IRs[rdb[key][0]].leftStart)
+            # get start point of ir (its the raw start if start < flanksize)
+            if (irDb.IRs[rdb[key][0]].leftStart < irDb.IRs[rdb[key][0]].flankSize):
+                start = irDb.IRs[rdb[key][0]].leftStart
+            else:
+                start = irDb.IRs[rdb[key][0]].flankSize
+
+            if (int(rdb[key][2]) < start - 20 and int(rdb[key][3]) > (length + (start + 20))):
                 irDb.IRs[rdb[key][0]].reverseReads[basename] += 1
                 final_filt_reads[rdb[key][0] + '_r_' + str(rdb[key][4]) + '_' + str(rdb[key][2]) + '_' + str(rdb[key][3])] = rdb[key]
 
@@ -127,11 +152,11 @@ def computeRatios(reads, irDb, basename, wd):
     return final_filt_reads
 
 
-def reportInvertons(irDb, basename, wd):
+def reportInvertons(irDb, basename, wd, reportAll):
 
     out_fh = open(wd + '/' + basename + "_vs_" + irDb.genomeName + '_ratio.tsv', 'w')
     for ir in irDb.IRs:
-        if irDb.IRs[ir].reverseReads[basename] >= 1:
+        if irDb.IRs[ir].reverseReads[basename] >= 1 or reportAll:
             print(ir + "\t" + str(irDb.IRs[ir].forwardReads[basename]) + "\t" + str(irDb.IRs[ir].reverseReads[basename]) + "\t" + str(irDb.IRs[ir].ratio[basename]) + "\t" + basename)
             out_fh.write(ir + "\t" + str(irDb.IRs[ir].forwardReads[basename]) + "\t" + str(irDb.IRs[ir].reverseReads[basename]) + "\t" + str(irDb.IRs[ir].ratio[basename]) + "\t" + basename + "\n")
 

@@ -15,6 +15,7 @@ class IRDb:
     genome = {}
     genomeName = ""
     IRs = []
+    genes = {}
 
     #def __init__(self, genome):
     #    self.genome = genome
