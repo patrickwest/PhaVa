@@ -5,6 +5,7 @@ import PhaseFinderLR.utils
 import PhaseFinderLR.locate
 import os
 import random
+import warnings
 from Bio.Seq import Seq
 from Bio import SeqIO
 
@@ -109,7 +110,11 @@ def parseGBK(path):
     genes = {}
     for record in SeqIO.parse(path, "genbank"):
         for seq_feature in record.features:
-            if seq_feature.type == 'CDS':
+            # edge case where genes overlapping genome start index look like they cover the whole genome
+            if seq_feature.type == 'CDS' and ( int(seq_feature.location.end) - int(seq_feature.location.start) ) < 100000:
+                # overlap detection assumes start coordinate comes before stop coordinate
+                if (int(seq_feature.location.end) - int(seq_feature.location.start) < 0):
+                    warnings.warn("Warning...........Gene stop coordinate is less than gene start coordinate at: " + str(seq_feature.qualifiers['locus_tag'][0]))
                 if int(seq_feature.location.strand) == -1:
                     strand = '-'
                 else:
