@@ -1,5 +1,5 @@
 # PhaVa
-Identifying invertons with long read data
+PhaVa is an approach for finding potentially **Pha**se **Va**riable invertible regions, invertons, in long-read seqeuncing data
 
 ## Installation
 
