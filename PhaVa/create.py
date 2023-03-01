@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 import logging
-import PhaseFinderLR.utils
-import PhaseFinderLR.locate
+import PhaVa.utils
+import PhaVa.locate
 import os
 import random
 import warnings
@@ -11,11 +11,11 @@ from Bio import SeqIO
 
 def main(args, irDb):
 
-    #if args.irs is not None:
-    #    irDb.genome = PhaseFinderLR.locate.parseGenome(args.fasta)
-    #    irDb.genomeName = os.path.basename(args.fasta)
-    #    irDb = parseIRs(args.irs, irDb)
-    #    PhaseFinderLR.locate.exportIRs(irDb.IRs, args.dir)
+    if args.irs is not None:
+        irDb.genome = PhaVa.locate.parseGenome(args.fasta)
+        irDb.genomeName = os.path.basename(args.fasta)
+        irDb = parseIRs(args.irs, irDb)
+        PhaVa.locate.exportIRs(irDb.IRs, args.dir)
 
     irDb = createInSilico(args, irDb)
     exportMockInvertons(irDb, args.dir)
@@ -29,8 +29,8 @@ def main(args, irDb):
         findGeneOverlaps(genes, irDb)
         exportGeneOverlaps(irDb, args.dir)
 
-    #if (args.mockGenome is not None and args.mockGenome):
-    #    createMockIRGenome(args, irDb)
+    if (args.mockGenome is not None and args.mockGenome):
+        createMockIRGenome(args, irDb)
 
     return irDb
 

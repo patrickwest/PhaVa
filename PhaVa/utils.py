@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 '''
-MitoScan- Utility functions and classes
+PhaVa- Utility functions and classes
 '''
 
 import sys

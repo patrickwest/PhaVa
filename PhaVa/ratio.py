@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import logging
-import PhaseFinderLR.utils
+import PhaVa.utils
 from multiprocessing.pool import ThreadPool
 import subprocess
 from functools import partial

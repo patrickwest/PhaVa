@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 '''
-PhaseFinderLR- parse command-line arguemnts
+PhaVa- parse command-line arguemnts
 '''
 
 __author__ = "Patrick T West"
@@ -13,15 +13,15 @@ import argparse
 import os
 import sys
 
-import PhaseFinderLR
-from PhaseFinderLR.manager import Manager
+import PhaVa
+from PhaVa.manager import Manager
 
 
-#def version():
-#    versionFile = open(os.path.join(PhaseFinderLR.__path__[0], 'VERSION'))
-#    return versionFile.read().strip()
+def version():
+    versionFile = open(os.path.join(PhaVa.__path__[0], 'VERSION'))
+    return versionFile.read().strip()
 
-#VERSION = version()
+VERSION = version()
 
 
 class SmartFormatter(argparse.ArgumentDefaultsHelpFormatter):
@@ -34,12 +34,12 @@ class SmartFormatter(argparse.ArgumentDefaultsHelpFormatter):
 
 def printHelp():
     print('')
-    #print('                ,,,;;;| PhaseFinderLR v' + VERSION + ' |;;;,,,''')
+    print('                ,,,;;;| PhaVa v' + VERSION + ' |;;;,,,''')
     print('''\
   Patrick T West. MIT License. Bhatt Lab, Stanford. 2022 (last updated 2022)
   Choose one of the operations below for more detailed help.
 
-  Example: PhaseFinderLR variation_wf -h
+  Example: phava variation_wf -h
   Commands:
     variation_wf            -> Combine locate, create, and ratio steps into one workflow for identifying phase variation
 
@@ -47,7 +47,6 @@ def printHelp():
     locate                  -> Identify regions flanked by invertable repeats
     create                  -> Create in silico flipped versions of invertons
     ratio                   -> Map reads and compute ratio of forward vs reverse orientation invertons
-    check_dependencies      -> Check which dependencies are properly installed
     ''')
 
 
@@ -75,10 +74,10 @@ def parse_args(args):
                          type=int)
     #CreateFlags.add_argument("--geneOverlap", help="Report gene/inverton overlaps. Requires a list of features in genbank format from --genes"
     #                     action='store_true')
-    CreateFlags.add_argument("--genes", help="List of gene features in genbank format, for detecting gene/inverton overlaps",
+    CreateFlags.add_argument("--genes", help="List of gene features in prodigal genbank format, for detecting gene/inverton overlaps",
                          type=str)
-    geneFormats = ["gbk", "gff"]
-    CreateFlags.add_argument("--genesFormat", help="File format of the list of gene features.",
+    geneFormats = ["gbk"]
+    CreateFlags.add_argument("--genesFormat", help="File format of the list of gene features. Must be in Prodigal genbank format",
                          choices=geneFormats, default="gbk")
 
     createReq_parent = argparse.ArgumentParser(add_help=False)

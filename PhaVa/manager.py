@@ -18,13 +18,13 @@ import os
 import sys
 from os.path import exists
 
-import PhaseFinderLR
-import PhaseFinderLR.summarize
-import PhaseFinderLR.utils
-import PhaseFinderLR.locate
-import PhaseFinderLR.create
-import PhaseFinderLR.ratio
-from PhaseFinderLR.fileManager import WorkDirectory
+import PhaVa
+import PhaVa.summarize
+import PhaVa.utils
+import PhaVa.locate
+import PhaVa.create
+import PhaVa.ratio
+from PhaVa.fileManager import WorkDirectory
 
 def version():
     x = ""
@@ -42,7 +42,7 @@ class Manager():
 
         #setup working directory and logging
         wd = WorkDirectory(args.dir)
-        logging.basicConfig(filename=args.dir + '/PhaseFinderLR.log', level=logging.INFO)
+        logging.basicConfig(filename=args.dir + '/PhaVa.log', level=logging.INFO)
 
         if(args.operation == "locate"):
             logging.info("------Beginning IR locating operation------")
@@ -70,7 +70,7 @@ class Manager():
     def ir_locate_operation(self, args):
         # annotate contigs with prodigal, cmscan, and hmmscan
         logging.info("------Beginning IR search------")
-        irDb = PhaseFinderLR.locate.main(args)
+        irDb = PhaVa.locate.main(args)
         logging.info("------Finished IR search------")
         self.pickleDb(args, irDb)
 
@@ -78,8 +78,8 @@ class Manager():
         logging.info("------Beginning mock IR creation------")
         irDb = self.unpickleDb(args)
         if irDb is None:
-            irDb = PhaseFinderLR.utils.IRDb()
-        irDb = PhaseFinderLR.create.main(args, irDb)
+            irDb = PhaVa.utils.IRDb()
+        irDb = PhaVa.create.main(args, irDb)
         logging.info("------Finished mock IR creation------")
         self.pickleDb(args, irDb)
 
@@ -87,7 +87,7 @@ class Manager():
         logging.info("------Beginning IR ratio calculation------")
         irDb = self.unpickleDb(args)
         if irDb is not None:
-            irDb = PhaseFinderLR.ratio.main(args, irDb)
+            irDb = PhaVa.ratio.main(args, irDb)
             logging.info("------Finished IR ratio calculation------")
             # pickling causes issues with running multiple ratio commands from the same directy, a common use
             #self.pickleDb(args, irDb)
@@ -96,7 +96,7 @@ class Manager():
         logging.info("------Beginning summarize operation------")
         irDb = self.unpickleDb(args)
         if irDb is not None:
-            PhaseFinderLR.summarize.main(args, irDb)
+            PhaVa.summarize.main(args, irDb)
             logging.info("------Finished summarize operation------")
 
     def variation_workflow_operation(self, args):

@@ -8,11 +8,11 @@ from functools import partial
 import logging
 import re
 import os
-import PhaseFinderLR.utils
+import PhaVa.utils
 
 def main(args):
     processedLog = []
-    irDb = PhaseFinderLR.utils.IRDb()
+    irDb = PhaVa.utils.IRDb()
 
     pool = ThreadPool(args.cpus)
     pool.map(partial(runEinverted, contigsPath=args.fasta, wd=args.dir), [0,1])
@@ -91,12 +91,12 @@ def parseEinverted(wd):
         if not overlap:
             #IRs.append(ir51)
             IRs[ir51[0] + ':' + str(ir51[1]) + '-' + str(ir51[2]) + '-' + str(ir51[3]) + '-' + str(ir51[4])] = \
-                PhaseFinderLR.utils.IR(ir51[0], ir51[1], ir51[2], ir51[3], ir51[4])
+                PhaVa.utils.IR(ir51[0], ir51[1], ir51[2], ir51[3], ir51[4])
 
     for ir75 in i75IRs:
         #IRs.append(ir75)
         IRs[ir75[0] + ':' + str(ir75[1]) + '-' + str(ir75[2]) + '-' + str(ir75[3]) + '-' + str(ir75[4])] = \
-            PhaseFinderLR.utils.IR(ir75[0], ir75[1], ir75[2], ir75[3], ir75[4])
+            PhaVa.utils.IR(ir75[0], ir75[1], ir75[2], ir75[3], ir75[4])
 
     return IRs
 
