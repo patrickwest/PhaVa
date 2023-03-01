@@ -21,3 +21,6 @@ Output from each step is centered around a output directory (-d) and should be t
 The locate and create steps only need to be performed once for a given genome or metagenome, and ratio can then be run on long-read samples using the same output directory (-d)
 
 ## Installation
+```
+git clone https://github.com/patrickwest/PhaVa
+```
