@@ -4,8 +4,7 @@ PhaVa is an approach for finding potentially **Pha**se **Va**riable invertible r
 ## Dependencies
 + [einverted](https://emboss.sourceforge.net/apps/release/6.6/emboss/apps/einverted.html)
 + [minimap2](https://github.com/lh3/minimap2)
-
-
++ [Biopython](https://biopython.org/)
 
 ## Usage
 
