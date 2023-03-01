@@ -17,6 +17,7 @@ Alternatively, all three steps can be run in a single command via variation_wf
 ```
 phava variation_wf -i genome.fasta -r long_reads.fastq -d out_dir
 ```
-Output from each step is centered around a output directory (-d) and should be the same directory for each command.
+Output from each step is centered around a output directory (-d) and should be the same directory for the entire workflow 
+The locate and create steps only need to be performed once for a given genome or metagenome, and ratio can then be run on long-read samples using the same output directory (-d)
 
 ## Installation
