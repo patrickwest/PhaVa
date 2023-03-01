@@ -24,3 +24,4 @@ The locate and create steps only need to be performed once for a given genome or
 ```
 git clone https://github.com/patrickwest/PhaVa
 ```
+## Citation
