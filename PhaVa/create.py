@@ -10,8 +10,7 @@ from Bio.Seq import Seq
 from Bio import SeqIO
 
 def main(args, irDb):
-
-    if args.irs is not None:
+    if hasattr(args, 'irs') and args.irs is not None:
         irDb.genome = PhaVa.locate.parseGenome(args.fasta)
         irDb.genomeName = os.path.basename(args.fasta)
         irDb = parseIRs(args.irs, irDb)
@@ -29,7 +28,7 @@ def main(args, irDb):
         findGeneOverlaps(genes, irDb)
         exportGeneOverlaps(irDb, args.dir)
 
-    if (args.mockGenome is not None and args.mockGenome):
+    if (hasattr(args, 'mockGenome') and args.mockGenome):
         createMockIRGenome(args, irDb)
 
     return irDb
@@ -134,6 +133,8 @@ def parseGFF(path):
             if sline[2] == 'CDS':
                 strand = sline[6]
                 id = sline[0] + '_' + sline[8].split(';')[0].split('_')[1]
+                if (int(sline[3]) > int(sline[4])):
+                    warnings.warn("Warning...........Gene stop coordinate is less than gene start coordinate at: " + id)
                 genes[id] = [sline[0], int(sline[3]), int(sline[4]), strand]
 
     return genes

@@ -74,11 +74,15 @@ def parse_args(args):
                          type=int)
     #CreateFlags.add_argument("--geneOverlap", help="Report gene/inverton overlaps. Requires a list of features in genbank format from --genes"
     #                     action='store_true')
-    CreateFlags.add_argument("--genes", help="List of gene features in prodigal genbank format, for detecting gene/inverton overlaps",
+    CreateFlags.add_argument("--genes", help="List of gene features in ncbi genbank format, for detecting gene/inverton overlaps",
                          type=str)
-    geneFormats = ["gbk"]
-    CreateFlags.add_argument("--genesFormat", help="File format of the list of gene features. Must be in Prodigal genbank format",
-                         choices=geneFormats, default="gbk")
+    geneFormats = ["gff","gbff"]
+    CreateFlags.add_argument("--genesFormat", help="File format of the list of gene features. Gff must be in prodigal gff format",
+                         choices=geneFormats, default="gbff")
+    CreateFlags.add_argument("--mockGenome", help="Create a mock genome where all putative IRs are flipped to opposite of the reference orientation",
+                         action='store_true')
+    CreateFlags.add_argument("--mockNumber", help="If creating a mockGenome, the number of invertons to invert. A value of 0 inverts all predicted inverton locations",
+                         default=0, type=int)
 
     createReq_parent = argparse.ArgumentParser(add_help=False)
     CreateReqFlags = createReq_parent.add_argument_group('CREATE SPECIFIC PARAMETERS')
@@ -86,10 +90,6 @@ def parse_args(args):
                          type=str)
     CreateReqFlags.add_argument("--irs", help="Table of identified invertable repeats (eg. if locate command was never run)",
                          type=str)
-    CreateReqFlags.add_argument("--mockGenome", help="Create a mock genome where all putative IRs are flipped to opposite of the reference orientation",
-                         action='store_true')
-    CreateReqFlags.add_argument("--mockNumber", help="If creating a mockGenome, the number of invertons to invert. A value of 0 inverts all predicted inverton locations",
-                         default=0, type=int)
 
     ratio_parent = argparse.ArgumentParser(add_help=False)
     RatioFlags = ratio_parent.add_argument_group('RATIO PARAMETERS')
