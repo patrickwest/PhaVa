@@ -62,6 +62,9 @@ def parse_args(args):
 
     SysFlags = parent_parser.add_argument_group('SYSTEM PARAMETERS')
     SysFlags.add_argument("-t", "--cpus", help="Number of threads to use", default=1, type=int)
+    SysFlags.add_argument("-l", "--log",
+                          help="Should the logging info be output to stdout? Otherwise, it will be written to 'PhaVa.log'",
+                          action='store_true')
 
     locate_parent = argparse.ArgumentParser(add_help=False)
     LocateFlags = locate_parent.add_argument_group('LOCATE PARAMETERS')
@@ -108,6 +111,7 @@ def parse_args(args):
                          type=str)
 
     # create subparsers
+    test_parser = argparse.ArgumentParser(add_help=False)
     locate_parser = subparsers.add_parser("locate", formatter_class=SmartFormatter,\
                                         parents=[parent_parser, locate_parent])
     create_parser = subparsers.add_parser("create", formatter_class=SmartFormatter,\
@@ -118,6 +122,8 @@ def parse_args(args):
                                         parents=[parent_parser, locate_parent, create_parent, ratio_parent])
     summarize_parser = subparsers.add_parser("summarize", formatter_class=SmartFormatter,\
                                         parents=[parent_parser])
+    test_parser = subparsers.add_parser("test", formatter_class=SmartFormatter,
+                                        parents=[test_parser])
 
     # Handle the situation where the user wants the raw help
     if len(args) == 0 or args[0] == '-h' or args[0] == '--help':
