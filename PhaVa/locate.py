@@ -151,8 +151,8 @@ def parseIRSeqs(IRs, seqs):
 def applyFilters(IRs):
     toBeDel = []
     for ir in IRs:
-        lgc = gc_fraction(IRs[ir].leftSeq, "ignore") * 100
-        rgc = gc_fraction(IRs[ir].rightSeq, "ignore") * 100
+        lgc = gc_fraction(IRs[ir].leftSeq, ambiguous='ignore') * 100
+        rgc = gc_fraction(IRs[ir].rightSeq, ambiguous='ignore') * 100
         # GC filter
         #if (lgc <= 15 or rgc <= 15 or lgc >= 85 or rgc >= 85):
         #    IRs.remove(ir)
