@@ -56,10 +56,11 @@ def main(args=None):
     sys.stderr.write("- python:   ")
     python_version = sys.version_info
     if python_version >= (3, 0, 0):
-        sys.stderr.write("      success, found v" + str(python_version[0]) + "." + str(python_version[1]) + "." + str(python_version[2]) + "\n")
+        sys.stderr.write("      success, found v" + str(python_version[0]) + "." +
+                         str(python_version[1]) + "." + str(python_version[2]) + "\n")
     else:
-        sys.stderr.write("      ERROR: found v " + str(python_version[0]) + "." + str(python_version[1]) + "." + str(
-            python_version[2]) + ". Required 3.0.0 (or higher)\n")
+        sys.stderr.write("      ERROR: found v " + str(python_version[0]) + "." +
+                         str(python_version[1]) + "." + str(python_version[2]) + ". Required 3.0.0 (or higher)\n")
         error_found = True
 
     # check minimap
@@ -90,6 +91,15 @@ def main(args=None):
         sys.stderr.write(" ERROR. EMBOSS is not installed\n")
         error_found = True
 
+    # optionally, check bowtie
+    sys.stderr.write("- bowtie2 (opt.):")
+    bowtie, bowtie_out, bowtie_err = is_tool_and_return0("bowtie2 --version")
+    if bowtie:
+        bowtie_version = bowtie_out.split('\n')[0].split("version ")[1]
+        sys.stderr.write(" success, found v" + bowtie_version + "\n")
+    else:
+        sys.stderr.write(" WARNING. Bowtie2 not found. The pipeline will not work for short reads!\n")
+    
     # run pipeline
     if (error_found):
         sys.stderr.write("### Skipping test pipeline because of errors\n")
@@ -129,7 +139,8 @@ def main(args=None):
     ratio_command = 'python ' + PhaVa + '  ratio -d ' + PhaVaWorkingDir + ' -l -r ' + simulatedReads
     formatted_ratio_command = shlex.split(ratio_command)
     print('PhaVa Ratio:')
-    ratio_process = subprocess.Popen(formatted_ratio_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    ratio_process = subprocess.Popen(formatted_ratio_command, stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE, universal_newlines=True)
     ratio_out, ratio_err = ratio_process.communicate()
     print(ratio_out)
     print(ratio_err)
