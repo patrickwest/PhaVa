@@ -42,7 +42,8 @@ def main(args, irDb):
     return irDb
 
 def runMinimap(index, wd, reads, genomeName, threads):
-    command = "minimap2 -a --MD -o " + wd + '/intermediate/' + os.path.basename(reads) + "_vs_" + genomeName + '.sam -t ' + str(threads) + ' ' + wd + '/invertedSeqs.fasta ' + reads
+    command = "minimap2 -a --MD -o " + wd + '/intermediate/' + os.path.basename(reads) + "_vs_" + \
+              genomeName + '.sam -t ' + str(threads) + ' ' + wd + '/invertedSeqs.fasta ' + reads
     logging.info(command)
     p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
@@ -86,9 +87,11 @@ def parseSam(wd, reads, genomeName, irDb, maxMismatch):
             flank_cutoff = flank_length * maxMismatch
 
             if num_mismatch < cutoff and num_flank_mismatch < flank_cutoff:
-                reads.append([splithead[0], splithead[1], read.reference_start, read.reference_end, read.query_name, read.mapping_quality])
+                reads.append([splithead[0], splithead[1], read.reference_start, read.reference_end,
+                              read.query_name, read.mapping_quality])
 
     return reads
+
 
 def computeRatios(reads, irDb, basename, wd):
     fdb = {}
@@ -145,7 +148,7 @@ def computeRatios(reads, irDb, basename, wd):
 
     for ir in irDb.IRs:
         if irDb.IRs[ir].forwardReads[basename] == 0:
-            irDb.IRs[ir].ratio[basename] = 10
+            irDb.IRs[ir].ratio[basename] = 1
         else:
             irDb.IRs[ir].ratio[basename] = irDb.IRs[ir].reverseReads[basename] / (irDb.IRs[ir].forwardReads[basename] + irDb.IRs[ir].reverseReads[basename])
 
