@@ -41,12 +41,18 @@ def printHelp():
 
   Example: phava variation_wf -h
   Commands:
-    variation_wf            -> Combine locate, create, and ratio steps into one workflow for identifying phase variation
+    variation_wf            -> Combine locate, create, and ratio steps 
+                               into one workflow for identifying phase variation
 
-    summarize               -> Report general statistics (requires running locate/create or variation_wf beforehand)
     locate                  -> Identify regions flanked by invertable repeats
     create                  -> Create in silico flipped versions of invertons
-    ratio                   -> Map reads and compute ratio of forward vs reverse orientation invertons
+    ratio                   -> Map reads and compute ratio of forward vs reverse 
+                               orientation invertons
+
+    summarize               -> Report general statistics (requires running 
+                               locate/create or variation_wf beforehand)
+    
+    test                    -> Test your installation
     ''')
 
 
@@ -116,7 +122,7 @@ def parse_args(args):
                                         parents=[parent_parser, locate_parent])
     create_parser = subparsers.add_parser("create", formatter_class=SmartFormatter,\
                                         parents=[parent_parser, create_parent, createReq_parent])
-    ration_parser = subparsers.add_parser("ratio", formatter_class=SmartFormatter,\
+    ratio_parser = subparsers.add_parser("ratio", formatter_class=SmartFormatter,\
                                         parents=[parent_parser, ratio_parent, ratioReq_parent])
     variation_wf_parser = subparsers.add_parser("variation_wf", formatter_class=SmartFormatter,\
                                         parents=[parent_parser, locate_parent, create_parent, ratio_parent])
