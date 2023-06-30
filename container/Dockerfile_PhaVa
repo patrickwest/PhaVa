@@ -1,0 +1,35 @@
+# syntax=docker/dockerfile:1
+FROM mambaorg/micromamba:focal
+
+USER root
+RUN apt-get update && \
+  apt-get install -yq tzdata && \
+  ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \
+  dpkg-reconfigure -f noninteractive tzdata
+RUN apt-get install -yq git
+USER $MAMBA_USER
+
+RUN <<EOF cat > phava.yml
+name: phava
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - emboss=6.5.7
+  - minimap2=2.17
+  - biopython=1.78
+  - pysam=0.17.0
+  - bowtie2=2.2.5
+  - samtools=1.15
+EOF
+
+RUN micromamba install -y -n base -f phava.yml && \
+  micromamba clean --all --yes
+
+ENV PATH "/opt/conda/bin:$PATH"
+
+
+RUN git clone https://github.com/jakob-wirbel/PhaVa.git
+RUN mv /tmp/PhaVa/bin/phava /opt/conda/bin/phava
+RUN mv /tmp/PhaVa/PhaVa /opt/conda/PhaVa
+RUN mv /tmp/PhaVa/tests /opt/conda/tests
