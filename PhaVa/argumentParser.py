@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-'''
+"""
 PhaVa- parse command-line arguemnts
-'''
+"""
 
 __author__ = "Patrick T West"
 __license__ = "MIT"
@@ -64,70 +64,85 @@ def parse_args(args):
 
     ReqFlags = parent_parser.add_argument_group('REQUIRED PARAMETERS')
     ReqFlags.add_argument("-d","--dir", required=True, help="R|Directory where data and output are stored\
-    \n*** USE THE SAME WORK DIRECTORY FOR ALL PHASEFINDERLR OPERATIONS ***")
+    \n*** USE THE SAME WORK DIRECTORY FOR ALL PHAVA OPERATIONS ***")
 
     SysFlags = parent_parser.add_argument_group('SYSTEM PARAMETERS')
     SysFlags.add_argument("-t", "--cpus", help="Number of threads to use", default=1, type=int)
     SysFlags.add_argument("-l", "--log",
-                          help="Should the logging info be output to stdout? Otherwise, it will be written to 'PhaVa.log'",
+                          help="Should the logging info be output to stdout? Otherwise,"
+                               " it will be written to 'PhaVa.log'",
                           action='store_true')
 
     locate_parent = argparse.ArgumentParser(add_help=False)
     LocateFlags = locate_parent.add_argument_group('LOCATE PARAMETERS')
     LocateFlags.add_argument("-i", "--fasta", help="Name of input assembly file to be searched",
-                         type=str)
+                             type=str)
 
     create_parent = argparse.ArgumentParser(add_help=False)
     CreateFlags = create_parent.add_argument_group('CREATE PARAMETERS')
-    CreateFlags.add_argument("-f", "--flankSize", help="Size flanking size to include on either side of invertable regions (in bps)", default=1000,
-                         type=int)
-    #CreateFlags.add_argument("--geneOverlap", help="Report gene/inverton overlaps. Requires a list of features in genbank format from --genes"
-    #                     action='store_true')
-    CreateFlags.add_argument("--genes", help="List of gene features in ncbi genbank format, for detecting gene/inverton overlaps",
-                         type=str)
-    geneFormats = ["gff","gbff"]
-    CreateFlags.add_argument("--genesFormat", help="File format of the list of gene features. Gff must be in prodigal gff format",
-                         choices=geneFormats, default="gbff")
-    CreateFlags.add_argument("--mockGenome", help="Create a mock genome where all putative IRs are flipped to opposite of the reference orientation",
-                         action='store_true')
-    CreateFlags.add_argument("--mockNumber", help="If creating a mockGenome, the number of invertons to invert. A value of 0 inverts all predicted inverton locations",
-                         default=0, type=int)
+    CreateFlags.add_argument("-f", "--flankSize", help="Size flanking size to include on either side of"
+                                                       " invertable regions (in bps)",
+                             default=1000, type=int)
+    CreateFlags.add_argument("--genes", help="List of gene features in ncbi genbank format, "
+                                             "for detecting gene/inverton overlaps",
+                             type=str)
+    geneFormats = ["gff", "gbff"]
+    CreateFlags.add_argument("--genesFormat", help="File format of the list of gene features. Gff must be in "
+                                                   "prodigal gff format",
+                             choices=geneFormats, default="gbff")
+    CreateFlags.add_argument("--mockGenome", help="Create a mock genome where all putative IRs are flipped to "
+                                                  "opposite of the reference orientation",
+                             action='store_true')
+    CreateFlags.add_argument("--mockNumber", help="If creating a mockGenome, the number of invertons to invert. "
+                                                  "A value of 0 inverts all predicted inverton locations",
+                             default=0, type=int)
 
     createReq_parent = argparse.ArgumentParser(add_help=False)
     CreateReqFlags = createReq_parent.add_argument_group('CREATE SPECIFIC PARAMETERS')
     CreateReqFlags.add_argument("-i", "--fasta", help="Name of input assembly file to be searched",
-                         type=str)
-    CreateReqFlags.add_argument("--irs", help="Table of identified invertable repeats (eg. if locate command was never run)",
-                         type=str)
+                                type=str)
+    CreateReqFlags.add_argument("--irs", help="Table of identified invertable repeats (eg. if "
+                                              "locate command was never run)",
+                                type=str)
 
     ratio_parent = argparse.ArgumentParser(add_help=False)
     RatioFlags = ratio_parent.add_argument_group('RATIO PARAMETERS')
     RatioFlags.add_argument("-r", "--fastq", help="Name of the reads file to be used for mapping",
-                         type=str)
-    RatioFlags.add_argument("-m", "--maxMismatch", help="Maximum proportion of inverton sequence that can be mismatch before a read is removed", default=0.15,
-                         type=float)
+                            type=str)
+    RatioFlags.add_argument("-m", "--maxMismatch",
+                            help="Maximum proportion of inverton sequence that can be mismatch before "
+                                 "a read is removed",
+                            default=0.15, type=float)
     RatioFlags.add_argument("--keepSam", help="Keep the sam file from the mapping",
-                         action='store_true')
-    RatioFlags.add_argument("--reportAll", help="Report mapping results for all putative invertons, regardless of outcome",
-                         action='store_true')
-
+                            action='store_true')
+    RatioFlags.add_argument("--reportAll", help="Report mapping results for all putative invertons, "
+                                                "regardless of outcome",
+                            action='store_true')
+    RatioFlags.add_argument("-s", "--short-reads", help="Run the pipeline with short reads instead of long reads",
+                            action='store_true')
+    RatioFlags.add_argument("-r2", "--fastq2",
+                            help="Name of the file with reverse reads to be used for mapping "
+                                 "(only for paired short reads!)",
+                            type=str)
     ratioReq_parent = argparse.ArgumentParser(add_help=False)
     RatioReqFlags = ratioReq_parent.add_argument_group('RATIO SPECIFIC PARAMETERS')
-    RatioReqFlags.add_argument("--inv", help="Fasta file of forward and inverted repeats (ie. generated from Create command)",
-                         type=str)
+    RatioReqFlags.add_argument("--inv",
+                               help="Fasta file of forward and inverted repeats (ie. generated from create command)",
+                               type=str)
+
 
     # create subparsers
     test_parser = argparse.ArgumentParser(add_help=False)
-    locate_parser = subparsers.add_parser("locate", formatter_class=SmartFormatter,\
-                                        parents=[parent_parser, locate_parent])
-    create_parser = subparsers.add_parser("create", formatter_class=SmartFormatter,\
-                                        parents=[parent_parser, create_parent, createReq_parent])
-    ratio_parser = subparsers.add_parser("ratio", formatter_class=SmartFormatter,\
-                                        parents=[parent_parser, ratio_parent, ratioReq_parent])
-    variation_wf_parser = subparsers.add_parser("variation_wf", formatter_class=SmartFormatter,\
-                                        parents=[parent_parser, locate_parent, create_parent, ratio_parent])
-    summarize_parser = subparsers.add_parser("summarize", formatter_class=SmartFormatter,\
-                                        parents=[parent_parser])
+    locate_parser = subparsers.add_parser("locate", formatter_class=SmartFormatter,
+                                          parents=[parent_parser, locate_parent])
+    create_parser = subparsers.add_parser("create", formatter_class=SmartFormatter,
+                                          parents=[parent_parser, create_parent, createReq_parent])
+    ratio_parser = subparsers.add_parser("ratio", formatter_class=SmartFormatter,
+                                         parents=[parent_parser, ratio_parent, ratioReq_parent])
+    variation_wf_parser = subparsers.add_parser("variation_wf", formatter_class=SmartFormatter,
+                                                parents=[parent_parser, locate_parent, create_parent, ratio_parent])
+    summarize_parser = subparsers.add_parser("summarize", formatter_class=SmartFormatter,
+                                             parents=[parent_parser])
     test_parser = subparsers.add_parser("test", formatter_class=SmartFormatter,
                                         parents=[test_parser])
 
