@@ -99,9 +99,9 @@ def main(args=None):
         sys.stderr.write(" success, found v" + bowtie_version + "\n")
     else:
         sys.stderr.write(" WARNING. Bowtie2 not found. The pipeline will not work for short reads!\n")
-    
+
     # run pipeline
-    if (error_found):
+    if error_found:
         sys.stderr.write("### Skipping test pipeline because of errors\n")
         return 1
 
