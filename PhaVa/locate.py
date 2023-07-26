@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from Bio import SeqIO
-from Bio.SeqUtils import GC
+from Bio.SeqUtils import gc_fraction
 from multiprocessing.pool import ThreadPool
 import subprocess
 from functools import partial
@@ -151,8 +151,8 @@ def parseIRSeqs(IRs, seqs):
 def applyFilters(IRs):
     toBeDel = []
     for ir in IRs:
-        lgc = GC(IRs[ir].leftSeq)
-        rgc = GC(IRs[ir].rightSeq)
+        lgc = gc_fraction(IRs[ir].leftSeq, ambiguous='ignore') * 100
+        rgc = gc_fraction(IRs[ir].rightSeq, ambiguous='ignore') * 100
         # GC filter
         #if (lgc <= 15 or rgc <= 15 or lgc >= 85 or rgc >= 85):
         #    IRs.remove(ir)
