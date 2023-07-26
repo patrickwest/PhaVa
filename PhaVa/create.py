@@ -146,6 +146,7 @@ def findGeneOverlaps(genes, irDb):
         irDb.IRs[ir].geneOverlaps = []
 
         for gene in genes:
+            # overlaps
             if genes[gene][0] == irDb.IRs[ir].chr:
                 if irDb.IRs[ir].leftStop >= genes[gene][1] and irDb.IRs[ir].rightStart <= genes[gene][2]:
                     irDb.IRs[ir].geneOverlaps.append([gene, "intragenic"])
@@ -159,16 +160,29 @@ def findGeneOverlaps(genes, irDb):
                         irDb.IRs[ir].geneOverlaps.append([gene, "partial overlap, stop"])
                     else:
                         irDb.IRs[ir].geneOverlaps.append([gene, "partial overlap, start"])
-
+                else: 
+                    if irDb.IRs[ir].leftStop > genes[gene][2]:
+                        if irDb.IRs[ir].leftStop - genes[gene][2] < irDb.IRs[ir].upstreamDistance:
+                            irDb.IRs[ir].upstreamDistance = irDb.IRs[ir].leftStop - genes[gene][2]
+                            irDb.IRs[ir].upstreamGene = gene
+                            irDb.IRs[ir].upstreamStrand = genes[gene][3]
+                    if irDb.IRs[ir].rightStart < genes[gene][1]:
+                        if genes[gene][1] - irDb.IRs[ir].rightStart < irDb.IRs[ir].downstreamDistance:
+                            irDb.IRs[ir].downstreamDistance = genes[gene][1] - irDb.IRs[ir].rightStart
+                            irDb.IRs[ir].downstreamGene = gene
+                            irDb.IRs[ir].downstreamStrand = genes[gene][3]
+            
     for ir in irDb.IRs:
         if len(irDb.IRs[ir].geneOverlaps) == 0:
             irDb.IRs[ir].geneOverlaps.append(["","intergenic"])
 
 def exportGeneOverlaps(irDb, outpath):
     out = open(outpath + '/geneOverlaps.tsv', 'w')
+    out.write("# Inverton\tGene Overlaps\tUpstream Gene\tUpstream Strand\tDistance to Upstream Gene\tDownstream Gene\tDownstream Strand\tDistance to Downstream Gene\n")
     for ir in irDb.IRs:
         out.write(ir + "\t")
         for overlap in irDb.IRs[ir].geneOverlaps:
             out.write(overlap[0] + "," + overlap[1] + ";")
+        out.write("\t" + irDb.IRs[ir].upstreamGene + "\t" + irDb.IRs[ir].upstreamStrand + "\t" + str(irDb.IRs[ir].upstreamDistance) + "\t" + irDb.IRs[ir].downstreamGene + "\t" + irDb.IRs[ir].downstreamStrand + "\t" + str(irDb.IRs[ir].downstreamDistance))
         out.write("\n")
     out.close()
