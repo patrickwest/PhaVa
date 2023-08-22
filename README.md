@@ -21,6 +21,8 @@ phava variation_wf -i genome.fasta -r long_reads.fastq -d out_dir
 Output from each step is centered around a output directory (-d) and should be the same directory for the entire workflow 
 The locate and create steps only need to be performed once for a given genome or metagenome, and ratio can then be run on long-read samples using the same output directory (-d)
 
+Any invertons with at least 1 read aligning in the reverse orientation will be found in the output. However, it is strongly recommended to fruther filter based on a minimum reverse read count and minimum % reverse of all reads cutoff (3 and 3% are recommended, respectively)
+
 ## Installation
 ```
 git clone https://github.com/patrickwest/PhaVa
