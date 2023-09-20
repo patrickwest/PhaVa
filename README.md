@@ -8,6 +8,8 @@ Versions listed are the versions PhaVa has been tested on.
 + [pysam](https://github.com/pysam-developers/pysam) (v. 0.17.0)
 + [Biopython](https://biopython.org/) (v. 1.81)
 
+PhaVa is developed and tested on Linux operating systems (CentOS Linux 7), however it should compatible with Mac OSX and Windows
+
 ## Usage
 The PhaVa workflow is divided into three steps: locate, create, and ratio. 
 ```
