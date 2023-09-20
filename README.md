@@ -33,7 +33,7 @@ Beyond installing dependencies, PhaVa install is:
 git clone https://github.com/patrickwest/PhaVa
 ```
 ## Testing
-PhaVa install can be tested on a small simulated dataset with pytest and a pytest module located in the 'tests' subdirectory:
+PhaVa install can be tested on a small simulated dataset, typically in <1 minute, with pytest and a pytest module located in the 'tests' subdirectory:
 ```
 pytest phava_test.py
 ```
