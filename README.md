@@ -2,10 +2,11 @@
 PhaVa is an approach for finding potentially **Pha**se **Va**riable invertible regions, also referred to as invertons, in long-read seqeuncing data
 
 ## Dependencies
-+ [EMBOSS](http://emboss.open-bio.org/html/use/ch02s07.html) [einverted](https://emboss.sourceforge.net/apps/release/6.6/emboss/apps/einverted.html)
-+ [minimap2](https://github.com/lh3/minimap2)
-+ [pysam](https://github.com/pysam-developers/pysam)
-+ [Biopython](https://biopython.org/)
+Versions listed are the versions PhaVa has been tested on.
++ [EMBOSS](http://emboss.open-bio.org/html/use/ch02s07.html) (v. 6.5.7) [einverted](https://emboss.sourceforge.net/apps/release/6.6/emboss/apps/einverted.html)
++ [minimap2](https://github.com/lh3/minimap2) (v. 2.17)
++ [pysam](https://github.com/pysam-developers/pysam) (v. 0.17.0)
++ [Biopython](https://biopython.org/) (v. 1.81)
 
 ## Usage
 The PhaVa workflow is divided into three steps: locate, create, and ratio. 
@@ -24,6 +25,7 @@ The locate and create steps only need to be performed once for a given genome or
 Any invertons with at least 1 read aligning in the reverse orientation will be found in the output. However, it is strongly recommended to fruther filter based on a minimum reverse read count and minimum % reverse of all reads cutoff (3 and 3% are recommended, respectively)
 
 ## Installation
+Beyond installing dependencies, PhaVa install is:
 ```
 git clone https://github.com/patrickwest/PhaVa
 ```
