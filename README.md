@@ -27,4 +27,9 @@ Any invertons with at least 1 read aligning in the reverse orientation will be f
 ```
 git clone https://github.com/patrickwest/PhaVa
 ```
+## Testing
+PhaVa install can be tested on a small simulated dataset with pytest and a pytest module located in the 'tests' subdirectory:
+```
+pytest phava_test.py
+```
 ## Citation
