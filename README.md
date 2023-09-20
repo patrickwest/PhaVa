@@ -25,7 +25,7 @@ The locate and create steps only need to be performed once for a given genome or
 Any invertons with at least 1 read aligning in the reverse orientation will be found in the output. However, it is strongly recommended to fruther filter based on a minimum reverse read count and minimum % reverse of all reads cutoff (3 and 3% are recommended, respectively)
 
 Expected output:
-![Expected output](https://github.com/patrickwest/PhaVa/blob/main/PhavaExpectedOutput.png?raw=true)
+![Expected output](https://github.com/patrickwest/PhaVa/blob/main/PhavaExpectedOutput-01.png?raw=true)
 
 ## Installation
 Beyond installing dependencies, PhaVa install is:
