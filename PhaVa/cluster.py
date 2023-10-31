@@ -107,7 +107,7 @@ def main(args):
     exportIRs(irDb.IRs, new_outdir)
     # give some stats about the clustering
     get_stats(df_result)
-    return irDb
+    return irDb, new_outdir
 
 
 def exportIRs(IRs, outpath):

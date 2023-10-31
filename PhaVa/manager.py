@@ -107,7 +107,8 @@ class Manager():
 
     def clustering_operation(self, args):
         logging.info("------Beginning clustering of IRs------")
-        irDb = PhaVa.cluster.main(args)
+        irDb, directory = PhaVa.cluster.main(args)
+        args.dir = directory
         logging.info("------Finished clustering of IRs------")
         self.pickleDb(args, irDb)
 
