@@ -21,6 +21,7 @@ dependencies:
   - pysam=0.17.0
   - bowtie2=2.2.5
   - samtools=1.15
+  - mmseqs2=14.7e284
 EOF
 
 RUN micromamba install -y -n base -f phava.yml && \

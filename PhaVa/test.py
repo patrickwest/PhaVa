@@ -100,6 +100,13 @@ def main(args=None):
     else:
         sys.stderr.write(" WARNING. Bowtie2 not found. The pipeline will not work for short reads!\n")
 
+    sys.stderr.write("- mmseqs2 (opt.):")
+    mmseqs, mmseqs_out, mmseqs_err = is_tool_and_return0("mmseqs version")
+    if mmseqs:
+        sys.stderr.write(" success, found v" + mmseqs_out + "\n")
+    else:
+        sys.stderr.write(" WARNING. mmseqs2 not found. The pipeline will not work for clustering!\n")
+
     # run pipeline
     if error_found:
         sys.stderr.write("### Skipping test pipeline because of errors\n")

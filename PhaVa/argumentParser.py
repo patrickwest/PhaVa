@@ -51,6 +51,7 @@ def printHelp():
 
     summarize               -> Report general statistics (requires running 
                                locate/create or variation_wf beforehand)
+    cluster                 -> Cluster the invertons from one or many genomes
     
     test                    -> Test your installation
     ''')
@@ -130,7 +131,18 @@ def parse_args(args):
                                help="Fasta file of forward and inverted repeats (ie. generated from create command)",
                                type=str)
 
-
+    cluster_parent = argparse.ArgumentParser(add_help=False)
+    ClusterFlags = cluster_parent.add_argument_group('CLUSTER PARAMETERS')
+    ClusterFlags.add_argument("-p", "--pident", help="Percent identity for the clustering",
+                              default=0.95, type=float)
+    ClusterFlags.add_argument("-n", "--new_dir", help="New PhaVa directory for the clustered database "
+                              "(defaults to '-d' if not supplied or './phava_out' for multiple genomes). "
+                              "To cluster the invertons from multiple genomes, supply a comma-separated list of " 
+                              "PhaVa directories to the '-d' parameter",
+                              type=str, default="./phava_out")
+    ClusterFlags.add_argument("-f", "--flankSize", help="Size flanking size to include on either side of"
+                                                        " invertable regions (in bps)",
+                              default=1000, type=int)
     # create subparsers
     test_parser = argparse.ArgumentParser(add_help=False)
     locate_parser = subparsers.add_parser("locate", formatter_class=SmartFormatter,
@@ -143,6 +155,8 @@ def parse_args(args):
                                                 parents=[parent_parser, locate_parent, create_parent, ratio_parent])
     summarize_parser = subparsers.add_parser("summarize", formatter_class=SmartFormatter,
                                              parents=[parent_parser])
+    cluster_parser = subparsers.add_parser("cluster", formatter_class=SmartFormatter,
+                                           parents=[parent_parser, cluster_parent])
     test_parser = subparsers.add_parser("test", formatter_class=SmartFormatter,
                                         parents=[test_parser])
 
