@@ -95,6 +95,7 @@ def parse_args(args):
     RatioFlags = ratio_parent.add_argument_group('RATIO PARAMETERS')
     RatioFlags.add_argument("-r", "--fastq", help="Name of the reads file to be used for mapping",
                          type=str)
+    RatioFlags.add_argument("-c", "--minRC", help="The minimum count of mapped reads to an 'inverted' inverton for it to be reported in the output", default=3, type=int)
     RatioFlags.add_argument("-m", "--maxMismatch", help="Maximum proportion of inverton sequence that can be mismatch before a read is removed", default=0.15,
                          type=float)
     RatioFlags.add_argument("--keepSam", help="Keep the sam file from the mapping",

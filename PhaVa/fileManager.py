@@ -21,3 +21,7 @@ class WorkDirectory(object):
         loc = location + '/' + 'intermediate'
         if not os.path.exists(loc):
             os.makedirs(loc)
+
+        data_loc = location + '/data'
+        if not os.path.exists(data_loc):
+            os.makedirs(data_loc)

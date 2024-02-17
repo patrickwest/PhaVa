@@ -14,10 +14,10 @@ def main(args, irDb):
         irDb.genome = PhaVa.locate.parseGenome(args.fasta)
         irDb.genomeName = os.path.basename(args.fasta)
         irDb = parseIRs(args.irs, irDb)
-        PhaVa.locate.exportIRs(irDb.IRs, args.dir)
+        PhaVa.locate.exportIRs(irDb.IRs, args.dir + '/data')
 
     irDb = createInSilico(args, irDb)
-    exportMockInvertons(irDb, args.dir)
+    exportMockInvertons(irDb, args.dir + '/data')
 
     if args.genes is not None:
         if args.genesFormat == 'gff':
@@ -26,7 +26,7 @@ def main(args, irDb):
             genes = parseGBK(args.genes)
 
         findGeneOverlaps(genes, irDb)
-        exportGeneOverlaps(irDb, args.dir)
+        exportGeneOverlaps(irDb, args.dir + '/data')
 
     if (hasattr(args, 'mockGenome') and args.mockGenome):
         createMockIRGenome(args, irDb)

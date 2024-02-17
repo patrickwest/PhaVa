@@ -27,7 +27,7 @@ def main(args):
     irDb.IRs = parseIRSeqs(irDb.IRs, irDb.genome)
     irDb.IRs = applyFilters(irDb.IRs)
 
-    exportIRs(irDb.IRs, args.dir)
+    exportIRs(irDb.IRs, args.dir + '/data')
 
     return irDb
 
@@ -170,6 +170,7 @@ def applyFilters(IRs):
 
 def exportIRs(IRs, outpath):
     out = open(outpath + '/IRs.tsv', 'w')
+    out.write("IR_Chr\tLeftIRStart\tLeftIRStop\tRightIRStart\tRightIRStop\tLeftIRSequence\tInvertibleSequence\tRightIRSequence\n")
     for ir in IRs:
         out.write(IRs[ir].chr + '\t' + \
         str(IRs[ir].leftStart) + '\t' + \

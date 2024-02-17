@@ -32,7 +32,7 @@ def main(args, irDb):
     reads = computeRatios(reads, irDb, os.path.basename(args.fastq), args.dir)
 
     # produce output
-    reportInvertons(irDb, os.path.basename(args.fastq), args.dir, args.reportAll)
+    reportInvertons(irDb, os.path.basename(args.fastq), args.dir, args.reportAll, args.minRC)
 
     if (args.keepSam):
         reportMappingReads(args.dir, args.fastq, irDb.genomeName, reads)
@@ -42,7 +42,7 @@ def main(args, irDb):
     return irDb
 
 def runMinimap(index, wd, reads, genomeName, threads):
-    command = "minimap2 -a --MD -o " + wd + '/intermediate/' + os.path.basename(reads) + "_vs_" + genomeName + '.sam -t ' + str(threads) + ' ' + wd + '/invertedSeqs.fasta ' + reads
+    command = "minimap2 -a --MD -o " + wd + '/intermediate/' + os.path.basename(reads) + "_vs_" + genomeName + '.sam -t ' + str(threads) + ' ' + wd + '/data/invertedSeqs.fasta ' + reads
     logging.info(command)
     p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
@@ -145,20 +145,25 @@ def computeRatios(reads, irDb, basename, wd):
 
     for ir in irDb.IRs:
         if irDb.IRs[ir].forwardReads[basename] == 0:
-            irDb.IRs[ir].ratio[basename] = 10
+            irDb.IRs[ir].ratio[basename] = 1
         else:
             irDb.IRs[ir].ratio[basename] = irDb.IRs[ir].reverseReads[basename] / (irDb.IRs[ir].forwardReads[basename] + irDb.IRs[ir].reverseReads[basename])
 
     return final_filt_reads
 
 
-def reportInvertons(irDb, basename, wd, reportAll):
+def reportInvertons(irDb, basename, wd, reportAll, minRC):
 
     out_fh = open(wd + '/' + basename + "_vs_" + irDb.genomeName + '_ratio.tsv', 'w')
+    out_fh.write("Inverton\tForwardReadCount\tReverseReadCount\tProportionReverse\tReadFile\tGene Overlaps\tUpstream Gene\tUpstream Strand\tDistance to Upstream Gene\tDownstream Gene\tDownstream Strand\tDistance to Downstream Gene\n")
     for ir in irDb.IRs:
-        if irDb.IRs[ir].reverseReads[basename] >= 1 or reportAll:
+        if irDb.IRs[ir].reverseReads[basename] >= minRC or reportAll:
             print(ir + "\t" + str(irDb.IRs[ir].forwardReads[basename]) + "\t" + str(irDb.IRs[ir].reverseReads[basename]) + "\t" + str(irDb.IRs[ir].ratio[basename]) + "\t" + basename)
-            out_fh.write(ir + "\t" + str(irDb.IRs[ir].forwardReads[basename]) + "\t" + str(irDb.IRs[ir].reverseReads[basename]) + "\t" + str(irDb.IRs[ir].ratio[basename]) + "\t" + basename + "\n")
+            out_fh.write(ir + "\t" + str(irDb.IRs[ir].forwardReads[basename]) + "\t" + str(irDb.IRs[ir].reverseReads[basename]) + "\t" + str(irDb.IRs[ir].ratio[basename]) + "\t" + basename + "\t")
+            for overlap in irDb.IRs[ir].geneOverlaps:
+                out_fh.write(overlap[0] + "," + overlap[1] + ";")
+            out_fh.write("\t" + irDb.IRs[ir].upstreamGene + "\t" + irDb.IRs[ir].upstreamStrand + "\t" + str(irDb.IRs[ir].upstreamDistance) + "\t" + irDb.IRs[ir].downstreamGene + "\t" + irDb.IRs[ir].downstreamStrand + "\t" + str(irDb.IRs[ir].downstreamDistance))
+            out_fh.write("\n")
 
     out_fh.close()
 

@@ -1,0 +1,10 @@
+v0.1.1
+-Add header to ratio.tsv output
+-Add header to IRs.tsv output
+-Add geneOverlap output to ratio.tsv (when available)
+-Relocate IRs.tsv, invertedSeqs.fasta and geneOverlaps.tsv outputs to the
+output ‘data’ subdirectory, to help clarify which outputs are important for
+standard use 
+-Add —minRC option for ratio step, allowing prefiltering of output by number
+of reads mapped to ‘inverted’ versions of invertons
+-Update and simplify the installation test script
