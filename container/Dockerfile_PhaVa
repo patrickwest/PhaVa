@@ -22,13 +22,13 @@ dependencies:
   - bowtie2=2.2.5
   - samtools=1.15i
   - sra-tools=3.0.6
+  - mmseqs2=14.7e284
 EOF
 
 RUN micromamba install -y -n base -f phava.yml && \
   micromamba clean --all --yes
 
 ENV PATH "/opt/conda/bin:$PATH"
-
 
 RUN git clone https://github.com/patrickwest/PhaVa.git
 RUN mv /tmp/PhaVa/bin/phava /opt/conda/bin/phava
