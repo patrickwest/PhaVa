@@ -1,4 +1,2 @@
-Inverton	forwardReads	reverseReads	ratio	read_file
-test_genome:1677-1690-1826-1839	5	2	0.2857142857142857	simulated_reads.fastq
-test_genome:7477-7493-8200-8216	0	1	1	simulated_reads.fastq
-test_genome:9567-9590-9803-9826	7	5	0.4166666666666667	simulated_reads.fastq
+Inverton	ForwardReadCount	ReverseReadCount	ProportionReverse	ReadFile	Gene Overlaps	Upstream Gene	Upstream Strand	Distance to Upstream Gene	Downstream Gene	Downstream Strand	Distance to Downstream Gene
+test_genome:9567-9590-9803-9826	7	5	0.4166666666666667	simulated_reads.fastq		NA	NA	1000000000	NA	NA	1000000000
