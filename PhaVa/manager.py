@@ -21,9 +21,11 @@ from os.path import exists
 import PhaVa
 import PhaVa.summarize
 import PhaVa.utils
+import PhaVa.cluster
 import PhaVa.locate
 import PhaVa.create
 import PhaVa.ratio
+import PhaVa.test
 from PhaVa.fileManager import WorkDirectory
 
 def version():
@@ -39,33 +41,44 @@ class Manager():
 
     def main(self, args):
         ''' Parse user options and call the correct pipeline'''
+        if (args.operation == "test"):
+            self.test_installation(args)
+        else:
+            # setup working directory and logging
+            if args.operation != "cluster":
+                wd = WorkDirectory(args.dir)
+            if args.log:
+                logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+            else:
+                logging.basicConfig(filename=args.dir + "/Phava.log", level=logging.INFO)
 
-        #setup working directory and logging
-        wd = WorkDirectory(args.dir)
-        logging.basicConfig(filename=args.dir + '/PhaVa.log', level=logging.INFO)
+            if args.operation == "locate":
+                logging.info("------Beginning IR locating operation------")
+                self.ir_locate_operation(args)
+                logging.info("------Finished IR locating operation------")
 
-        if(args.operation == "locate"):
-            logging.info("------Beginning IR locating operation------")
-            self.ir_locate_operation(args)
-            logging.info("------Finished IR locating operation------")
+            if args.operation == "create":
+                logging.info("------Beginning IR create operation------")
+                self.ir_create_operation(args)
+                logging.info("------Finished IR create operation------")
 
-        if(args.operation == "create"):
-            logging.info("------Beginning IR create operation------")
-            self.ir_create_operation(args)
-            logging.info("------Finished IR create operation------")
+            if args.operation == "ratio":
+                logging.info("------Beginning IR ratio operation------")
+                self.ir_ratio_operation(args)
+                logging.info("------Finished IR ratio operation------")
 
-        if(args.operation == "ratio"):
-            logging.info("------Beginning IR ratio operation------")
-            self.ir_ratio_operation(args)
-            logging.info("------Finished IR ratio operation------")
+            if args.operation == "variation_wf":
+                logging.info("------Beginning variation workflow operation------")
+                self.variation_workflow_operation(args)
+                logging.info("------Finished variation workflow operation------")
 
-        if(args.operation =="variation_wf"):
-            logging.info("------Beginning variation workflow operation------")
-            self.variation_workflow_operation(args)
-            logging.info("------Finished variation workflow operation------")
+            if args.operation == "cluster":
+                logging.info("------Beginning clustering operation------")
+                self.clustering_operation(args)
+                logging.info("------Finished clustering operation------")
 
-        if(args.operation =="summarize"):
-            self.summarize_operation(args)
+            if args.operation == "summarize":
+                self.summarize_operation(args)
 
     def ir_locate_operation(self, args):
         # annotate contigs with prodigal, cmscan, and hmmscan
@@ -92,12 +105,22 @@ class Manager():
             # pickling causes issues with running multiple ratio commands from the same directy, a common use
             #self.pickleDb(args, irDb)
 
+    def clustering_operation(self, args):
+        logging.info("------Beginning clustering of IRs------")
+        irDb, directory = PhaVa.cluster.main(args)
+        args.dir = directory
+        logging.info("------Finished clustering of IRs------")
+        self.pickleDb(args, irDb)
+
     def summarize_operation(self, args):
         logging.info("------Beginning summarize operation------")
         irDb = self.unpickleDb(args)
         if irDb is not None:
             PhaVa.summarize.main(args, irDb)
             logging.info("------Finished summarize operation------")
+
+    def test_installation(self, args):
+        PhaVa.test.main(args)
 
     def variation_workflow_operation(self, args):
         self.ir_locate_operation(args)

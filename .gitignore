@@ -1,0 +1,4 @@
+*DS_store
+.idea
+PhaVa/__pycache__/
+tests/test_outputs
