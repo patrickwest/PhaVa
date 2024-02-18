@@ -40,4 +40,35 @@ PhaVa install can be tested on a small simulated dataset, typically in <1 minute
 ```
 phava test
 ```
+## Tutorial
+As an example run through of the PhaVa workflow, we have three isolate long-read sequencing datasets from B. theta, grown in different conditions, we would like to check for invertons. The first step is to identify IRs in the B. theta genome (and find which genes they overlap, if a gene annotation file is provided). In this case, we do want gene overlap information, so we first run prodigal gene prediction on the reference genome
+```
+prodigal -i GCA_000011065.1_ASM1106v1_genomic.fna -f gff -o GCA_000011065.1_ASM1106v1_genomic.fna.gff
+```
+Next, we run the phava locate and create steps to identify IRs in the genome. Specifying the prodigal output as our gene information
+```
+phava locate -i GCA_000011065.1_ASM1106v1_genomic.fna -d btheta_inv
+phava create -i GCA_000011065.1_ASM1106v1_genomic.fna --genesFormat --genes GCA_000011065.1_ASM1106v1_genomic.fna.gff -d btheta_inv
+```
+note that the same output directory (-d) is used for all of our commands in this analysis. A different output directory would only be used if you performed analysis on another reference genome.
+Finally, we run the ratio step for each long-read datsaset to map our long-reads and pull out invertons that have reads mapping to the inverted version
+```
+phava ratio -r condition1.fastq -d btheta_inv
+phava ratio -r condition2.fastq -d btheta_inv
+phava ratio -r condition3.fastq -d btheta_inv
+```
+In the output folder, there will be three tsv files containing the putative invertons and the evidence leading to their detection
+```
+condition1.fastq_vs_GCA_000011065.1_ASM1106v1_genomic.fna
+condition2.fastq_vs_GCA_000011065.1_ASM1106v1_genomic.fna
+condition3.fastq_vs_GCA_000011065.1_ASM1106v1_genomic.fna
+```
+
+Note: instead of running the locate, create, and ratio commands separately, the variation_wf command can be used to perform all three in one step and get the same result
+```
+phava variation_wf -i GCA_000011065.1_ASM1106v1_genomic.fna --genesFormat --genes GCA_000011065.1_ASM1106v1_genomic.fna.gff -r condition1.fastq -d btheta_inv
+phava variation_wf -i GCA_000011065.1_ASM1106v1_genomic.fna --genesFormat --genes GCA_000011065.1_ASM1106v1_genomic.fna.gff -r condition2.fastq -d btheta_inv
+phava variation_wf -i GCA_000011065.1_ASM1106v1_genomic.fna --genesFormat --genes GCA_000011065.1_ASM1106v1_genomic.fna.gff -r condition3.fastq -d btheta_inv
+```
+
 ## Citation
