@@ -45,12 +45,12 @@ As an example run through of the PhaVa workflow, we have three isolate long-read
 ```
 prodigal -i GCA_000011065.1_ASM1106v1_genomic.fna -f gff -o GCA_000011065.1_ASM1106v1_genomic.fna.gff
 ```
-Next, we run the phava locate and create steps to identify IRs in the genome. Specifying the prodigal output as our gene information
+Next, we run the phava locate and create steps to identify IRs in the genome, specifying the prodigal output as our gene information
 ```
 phava locate -i GCA_000011065.1_ASM1106v1_genomic.fna -d btheta_inv
 phava create -i GCA_000011065.1_ASM1106v1_genomic.fna --genesFormat --genes GCA_000011065.1_ASM1106v1_genomic.fna.gff -d btheta_inv
 ```
-note that the same output directory (-d) is used for all of our commands in this analysis. A different output directory would only be used if you performed analysis on another reference genome.
+Note that the same output directory (-d) is used for all of our commands in this analysis. A different output directory would only be used if you performed analysis on another reference genome.
 Finally, we run the ratio step for each long-read datsaset to map our long-reads and pull out invertons that have reads mapping to the inverted version
 ```
 phava ratio -r condition1.fastq -d btheta_inv
