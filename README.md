@@ -3,6 +3,7 @@ PhaVa is an approach for finding potentially **Pha**se **Va**riable invertible r
 
 ## Dependencies
 Versions listed are the versions PhaVa has been tested on.
++ python (v3.9+)
 + [EMBOSS](http://emboss.open-bio.org/html/use/ch02s07.html) (v. 6.5.7) [einverted](https://emboss.sourceforge.net/apps/release/6.6/emboss/apps/einverted.html)
 + [minimap2](https://github.com/lh3/minimap2) (v. 2.17)
 + [pysam](https://github.com/pysam-developers/pysam) (v. 0.17.0)
@@ -35,8 +36,8 @@ Beyond installing dependencies, PhaVa install is:
 git clone https://github.com/patrickwest/PhaVa
 ```
 ## Testing
-PhaVa install can be tested on a small simulated dataset, typically in <1 minute, with pytest and a pytest module located in the 'tests' subdirectory:
+PhaVa install can be tested on a small simulated dataset, typically in <1 minute, with:
 ```
-pytest phava_test.py
+phava test
 ```
 ## Citation
