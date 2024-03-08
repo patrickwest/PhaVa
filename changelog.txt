@@ -1,8 +1,14 @@
+v0.2.2
+-Add a function to predict the effect of an inversion whenever
+it is within a gene [part of the `create` command]
+
 v0.2.1
--Add `cluster` command to cluster IRs based on flanking and internal regions, using mmseqs2
+-Add `cluster` command to cluster IRs based on flanking and 
+internal regions, using mmseqs2
 
 v0.2.0
--Add short read option for the `ratio` command, using bowtie [!development version!]
+-Add short read option for the `ratio` command, using 
+bowtie [!development version!]
 
 v0.1.1
 -Add header to ratio.tsv output
