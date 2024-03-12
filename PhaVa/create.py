@@ -7,6 +7,7 @@ import random
 import warnings
 from Bio.Seq import Seq
 from Bio import SeqIO
+from Bio import SeqFeature
 
 
 def main(args, irDb):
@@ -113,11 +114,12 @@ def parseGBK(path):
     for record in SeqIO.parse(path, "genbank"):
         for seq_feature in record.features:
             # edge case where genes overlapping genome start index look like they cover the whole genome
-            if seq_feature.type == 'CDS' and ( int(seq_feature.location.end) - int(seq_feature.location.start) ) < 100000:
+            if seq_feature.type == 'CDS':
                 if 'pseudo' not in seq_feature.qualifiers.keys():
                     # overlap detection assumes start coordinate comes before stop coordinate
                     if int(seq_feature.location.end) - int(seq_feature.location.start) < 0:
-                        warnings.warn("Warning...........Gene stop coordinate is less than gene start coordinate at: " + str(seq_feature.qualifiers['locus_tag'][0]))
+                        warnings.warn("Warning: Gene stop coordinate is less than gene start coordinate at: " + \
+                                      str(seq_feature.qualifiers['locus_tag'][0]))
                     if int(seq_feature.location.strand) == -1:
                         strand = '-'
                     else:
@@ -125,115 +127,129 @@ def parseGBK(path):
                     if len(seq_feature.location.parts) > 1:
                         if strand == '+':
                             start = int(seq_feature.location.parts[0].start)
-                            end = int(seq_feature.location.parts[1].end)
+                            end = int(seq_feature.location.parts[len(seq_feature.location.parts)-1].end)
                         else:
-                            start = int(seq_feature.location.parts[1].start)
+                            start = int(seq_feature.location.parts[len(seq_feature.location.parts)-1].start)
                             end = int(seq_feature.location.parts[0].end)
-                        if not end - start < 0:
-                            genes[seq_feature.qualifiers['locus_tag'][0]] = [record.id,
-                                                                             int(seq_feature.location.start),
-                                                                             int(seq_feature.location.end), strand,
-                                                                             seq_feature.qualifiers['transl_table'][0],
-                                                                             seq_feature.location.parts]
+                        genes[seq_feature.qualifiers['locus_tag'][0]] = [record.id,
+                                                                         start,
+                                                                         end, strand,
+                                                                         seq_feature.qualifiers['transl_table'][0],
+                                                                         seq_feature.location.parts]
                     else:
                         genes[seq_feature.qualifiers['locus_tag'][0]] = [record.id,
                                                                          int(seq_feature.location.start),
                                                                          int(seq_feature.location.end), strand,
                                                                          seq_feature.qualifiers['transl_table'][0],
                                                                          seq_feature.location.parts]
-
     return genes
 
 
 # Parse a prodigal gff file
 def parseGFF(path):
     genes = {}
-
-    fh = open (path)
+    regions = {}
+    fh = open(path)
     for line in fh:
         if not line.startswith('#'):
-            sline = line.strip().split()
+            sline = line.strip().split("\t")
+            if sline[2] == 'region':
+                regions[sline[0]] = int(sline[4])
             if sline[2] == 'CDS':
-                strand = sline[6]
-                id = sline[0] + '_' + sline[8].split(';')[0].split('_')[1]
-                if (int(sline[3]) > int(sline[4])):
-                    warnings.warn("Warning...........Gene stop coordinate is less than gene start coordinate at: " + id)
-                genes[id] = [sline[0], int(sline[3]), int(sline[4]), strand]
+                extra_info = sline[8].split(';')
+                if 'pseudo=true' not in extra_info:
+                    strand = sline[6]
+                    if strand == '+':
+                        strand_int = 1
+                    else:
+                        strand_int = -1
+                    gene_id = [x for x in extra_info if x.find('locus_tag') != -1][0]
+                    gene_id = gene_id.split('locus_tag=')[1]
+                    t_table = [x for x in extra_info if x.find('transl_table') != -1][0]
+                    t_table = t_table.split('transl_table=')[1]
 
+                    # check that the location does not go over the edge of the region
+                    if int(sline[4]) > regions[sline[0]]:
+                        end = [regions[sline[0]], int(sline[4]) - regions[sline[0]]]
+                        if int(sline[3]) > regions[sline[0]]:
+                            start = int(sline[3]) - regions[sline[0]]
+                            end = [end[1]]
+                        else:
+                            start = int(sline[3])
+                    else:
+                        end = [int(sline[4])]
+                        start = int(sline[3])
+
+                    # add the regions to already existing genes, otherwise initalize the gene info
+                    if gene_id in genes.keys():
+                        old_info = genes[gene_id]
+                        if len(end) > 1:
+                            new_location = (old_info[5] + [SeqFeature.FeatureLocation(start-1, end[0], strand_int),
+                                                           SeqFeature.FeatureLocation(0, end[1], strand_int)])
+                        else:
+                            new_location = (old_info[5] + [SeqFeature.FeatureLocation(start-1, end[0], strand_int)])
+                        if strand == '+':
+                            ovstart = int(new_location[0].start)
+                            ovend = int(new_location[len(new_location) - 1].end)
+                        else:
+                            ovstart = int(new_location[len(new_location) - 1].start)
+                            ovend = int(new_location[0].end)
+                        genes[gene_id] = [sline[0], ovstart, ovend, strand, t_table, new_location]
+                    else:
+                        if len(end) > 1:
+                            if strand == "+":
+                                new_location = [SeqFeature.FeatureLocation(start-1, end[0], strand_int),
+                                                SeqFeature.FeatureLocation(0, end[1], strand_int)]
+                            else:
+                                new_location = [SeqFeature.FeatureLocation(0, end[1], strand_int),
+                                                SeqFeature.FeatureLocation(start-1, end[0], strand_int)]
+                        else:
+                            new_location = [SeqFeature.FeatureLocation(start-1, end[0], strand_int)]
+                        genes[gene_id] = [sline[0], start-1, end[len(end)-1], strand, t_table,
+                                          new_location]
     return genes
 
 
 def findInversionEffect(irDb, ir, gene):
     seq_chr = irDb.genome[irDb.IRs[ir].chr]
-    seq = seq_chr[gene[1]:gene[2]]
-    seq_inv = seq_chr[gene[1]:irDb.IRs[ir].leftStop] + \
-              str(Seq(seq_chr[irDb.IRs[ir].leftStop:irDb.IRs[ir].rightStart]).reverse_complement()) + \
-              seq_chr[irDb.IRs[ir].rightStart:gene[2]]
-    first_part = int(len(seq_chr[gene[1]:irDb.IRs[ir].leftStop])/3)
-    last_part = int(len(seq_chr[irDb.IRs[ir].rightStart:gene[2]])/3)
-    if len(gene[5]) > 1:
-        if len(gene[5]) == 2:
-            if gene[5][0].strand != gene[5][1].strand:
-                return "unclear:complex gene on multiple strands"
-            else:
-                seq = seq_chr[gene[5][0].start:gene[5][0].end] + seq_chr[gene[5][1].start:gene[5][1].end]
-                if gene[3] == '+':
-                    if irDb.IRs[ir].leftStop < gene[5][0].end and irDb.IRs[ir].rightStart < gene[5][0].end:
-                        seq_inv = seq_chr[gene[1]:irDb.IRs[ir].leftStop] + \
-                                  str(Seq(seq_chr[irDb.IRs[ir].leftStop:irDb.IRs[ir].rightStart]).reverse_complement()) + \
-                                  seq_chr[irDb.IRs[ir].rightStart:gene[5][0].end] + seq_chr[gene[5][1].start:gene[5][1].end]
-                    elif irDb.IRs[ir].leftStop > gene[5][1].start and irDb.IRs[ir].rightStart > gene[5][1].start:
-                        seq_inv = seq_chr[gene[1]:gene[5][0].end] + \
-                                  seq_chr[gene[5][1].start:irDb.IRs[ir].leftStop] + \
-                                  str(Seq(seq_chr[irDb.IRs[ir].leftStop:irDb.IRs[ir].rightStart]).reverse_complement()) + \
-                                seq_chr[irDb.IRs[ir].rightStart:gene[5][1].end]
-                    else:
-                        seq_inv = seq_chr[gene[1]:irDb.IRs[ir].leftStop] + \
-                                  str(Seq(seq_chr[irDb.IRs[ir].leftStop:gene[5][0].end] + seq_chr[gene[5][1].start:irDb.IRs[ir].rightStart]).reverse_complement()) + \
-                                  seq_chr[irDb.IRs[ir].rightStart:gene[5][1].end]
-                else:
-                    if irDb.IRs[ir].leftStop > gene[5][0].start and irDb.IRs[ir].rightStart > gene[5][0].start:
-                        seq_inv = seq_chr[gene[5][1].start:gene[5][1].end] + \
-                                  seq_chr[gene[5][0].start:irDb.IRs[ir].leftStop] + \
-                                  str(Seq(seq_chr[irDb.IRs[ir].leftStop:irDb.IRs[ir].rightStart]).reverse_complement()) + \
-                                  seq_chr[irDb.IRs[ir].rightStart:gene[5][0].end]
-                    elif irDb.IRs[ir].leftStop < gene[5][1].end and irDb.IRs[ir].rightStart < gene[5][1].end:
-                        seq_inv = seq_chr[gene[5][1].start:irDb.IRs[ir].leftStop] + \
-                                  str(Seq(seq_chr[irDb.IRs[ir].leftStop:irDb.IRs[ir].rightStart]).reverse_complement()) + \
-                                  seq_chr[irDb.IRs[ir].rightStart:gene[5][1].end] + seq_chr[gene[5][0].start:gene[5][0].end]
-                    else:
-                        seq_inv = seq_chr[gene[5][1].start:irDb.IRs[ir].leftStop] + \
-                                  str(Seq(seq_chr[irDb.IRs[ir].leftStop:gene[5][1].end] + seq_chr[gene[5][0].start:irDb.IRs[ir].rightStart]).reverse_complement()) + \
-                                  seq_chr[irDb.IRs[ir].rightStart:gene[5][0].end]
+    if len(gene[5]) == 1:
+        if gene[3] == '+':
+            seq = seq_chr[gene[1]:gene[2]]
         else:
-            return "unclear:complex gene with multiple regions"
-    if len(seq) % 3 != 0:
-        print('weird seq')
-    if len(seq_inv) % 3 != 0:
-        print('weird seq_inv')
-    if gene[3] == '+':
-        forward = str(Seq(seq).translate(table=int(gene[4])))
-        reverse = str(Seq(seq_inv).translate(table=int(gene[4])))
-        forward_ = forward[0:first_part] + '-' + \
-                   forward[first_part:len(forward) - last_part] + '-' + \
-                   forward[len(forward) - last_part:]
-        reverse_ = reverse[0:first_part] + '-' + \
-                   reverse[first_part:len(reverse) - last_part] + '-' + \
-                   reverse[len(reverse) - last_part:]
+            seq = str(Seq(seq_chr[gene[1]:gene[2]]).reverse_complement())
     else:
-        forward = str(Seq(seq).reverse_complement().translate(table=int(gene[4])))
-        reverse = str(Seq(seq_inv).reverse_complement().translate(table=int(gene[4])))
-        forward_ = forward[0:last_part] + '-' + \
-                   forward[last_part:len(forward) - first_part] + '-' + \
-                   forward[len(forward) - first_part:]
-        reverse_ = reverse[0:last_part] + '-' + \
-                   reverse[last_part:len(reverse) - first_part] + '-' + \
-                   reverse[len(reverse) - first_part:]
-
+        seq = ""
+        if gene[3] == "+":
+            for i in gene[5]:
+                seq = seq + seq_chr[i.start:i.end]
+        else:
+            for i in gene[5]:
+                seq = seq + str(Seq(seq_chr[i.start:i.end]).reverse_complement())
+    if gene[3] == '+':
+        idx_start = irDb.IRs[ir].leftStop - gene[1]
+        idx_end = irDb.IRs[ir].rightStop - gene[1]
+        first_part = int(idx_start / 3)
+        last_part = int(len(seq) / 3) - int(idx_end / 3) - 1
+    else:
+        idx_start = gene[2] - irDb.IRs[ir].rightStart
+        idx_end = gene[2] - irDb.IRs[ir].leftStop
+        first_part = int(idx_start / 3)
+        last_part = int(len(seq) / 3) - int(idx_end / 3) - 1
+    seq_inv = seq[:idx_start] + str(Seq(seq[idx_start:idx_end]).reverse_complement()) + \
+              seq[idx_end:]
+    if len(seq) % 3 != 0 or len(seq_inv) % 3 != 0:
+        warnings.warn('weird sequence (not multiple of 3) for' + ir)
+    forward = str(Seq(seq).translate(table=int(gene[4])))
+    reverse = str(Seq(seq_inv).translate(table=int(gene[4])))
+    forward_ = forward[0:first_part] + '-' + \
+               forward[first_part:len(forward) - last_part] + '-' + \
+               forward[len(forward) - last_part:]
+    reverse_ = reverse[0:first_part] + '-' + \
+               reverse[first_part:len(reverse) - last_part] + '-' + \
+               reverse[len(reverse) - last_part:]
     problem = False
     if forward.count('*') > 1:
         problem = True
-
     if reverse.count('*') > 1:
         result = 'early_stop'
     else:
@@ -269,7 +285,7 @@ def findGeneOverlaps(genes, irDb):
                         irDb.IRs[ir].geneOverlaps.append([gene, "partial overlap, stop"])
                     else:
                         irDb.IRs[ir].geneOverlaps.append([gene, "partial overlap, start"])
-                else: 
+                else:
                     if irDb.IRs[ir].leftStop > genes[gene][2]:
                         if irDb.IRs[ir].leftStop - genes[gene][2] < irDb.IRs[ir].upstreamDistance:
                             irDb.IRs[ir].upstreamDistance = irDb.IRs[ir].leftStop - genes[gene][2]
@@ -291,8 +307,11 @@ def exportGeneOverlaps(irDb, outpath):
     out.write("# Inverton\tGene Overlaps\tUpstream Gene\tUpstream Strand\tDistance to Upstream Gene\tDownstream Gene\tDownstream Strand\tDistance to Downstream Gene\n")
     for ir in irDb.IRs:
         out.write(ir + "\t")
-        for overlap in irDb.IRs[ir].geneOverlaps:
-            out.write(overlap[0] + "," + overlap[1] + ";")
+        if len(irDb.IRs[ir].geneOverlaps) > 0:
+            tmp = irDb.IRs[ir].geneOverlaps
+            tmp.sort()
+            for overlap in tmp:
+                out.write(overlap[0] + "," + overlap[1] + ";")
         out.write("\t" + irDb.IRs[ir].upstreamGene + "\t" + irDb.IRs[ir].upstreamStrand + "\t" + str(irDb.IRs[ir].upstreamDistance) + "\t" + irDb.IRs[ir].downstreamGene + "\t" + irDb.IRs[ir].downstreamStrand + "\t" + str(irDb.IRs[ir].downstreamDistance))
         out.write("\n")
     out.close()

@@ -1,3 +1,8 @@
+v0.2.3
+-Change how gff files are read in so that the prediction of
+intragenic inversions also works with genes supplied in the 
+gff format
+
 v0.2.2
 -Add a function to predict the effect of an inversion whenever
 it is within a gene [part of the `create` command]
