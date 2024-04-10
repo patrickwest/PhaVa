@@ -8,6 +8,7 @@ Versions listed are the versions PhaVa has been tested on.
 + [minimap2](https://github.com/lh3/minimap2) (v. 2.17)
 + [pysam](https://github.com/pysam-developers/pysam) (v. 0.17.0)
 + [Biopython](https://biopython.org/) (v. 1.81)
++ [mmseqs2](https://github.com/soedinglab/MMseqs2) 
 
 PhaVa is developed and tested on Linux operating systems (CentOS Linux 7), however it should compatible with Mac OSX and Windows
 
@@ -31,9 +32,9 @@ Expected output:
 ![Expected output](https://github.com/patrickwest/PhaVa/blob/main/PhavaExpectedOutput-01.png?raw=true)
 
 ## Installation
-Beyond installing dependencies, PhaVa install is:
+Installing is likely easiest with conda:
 ```
-git clone https://github.com/patrickwest/PhaVa
+conda install phava -c bioconda
 ```
 ## Testing
 PhaVa install can be tested on a small simulated dataset, typically in <1 minute, with:
