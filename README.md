@@ -34,7 +34,11 @@ Expected output:
 ## Installation
 Installing is likely easiest with conda:
 ```
-conda install phava -c bioconda
+# create a new environment
+conda create -n phava
+conda activate phava
+# install phava
+conda install phava -c bioconda -c conda-forge
 ```
 ## Testing
 PhaVa install can be tested on a small simulated dataset, typically in <1 minute, with:
