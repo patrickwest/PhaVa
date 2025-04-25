@@ -89,7 +89,7 @@ def parse_args(args):
                              type=str)
     geneFormats = ["gff", "gbff"]
     CreateFlags.add_argument("--genesFormat", help="File format of the list of gene features. Gff must be in "
-                                                   "prodigal gff format",
+                                                   "NCBI gff format",
                              choices=geneFormats, default="gbff")
     CreateFlags.add_argument("--mockGenome", help="Create a mock genome where all putative IRs are flipped to "
                                                   "opposite of the reference orientation",
